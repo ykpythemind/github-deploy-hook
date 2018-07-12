@@ -1,11 +1,11 @@
 
 require "sinatra"
 
-DEPLOY_SCRIPT_FILE = ENV["DEPLOY_SCRIPT_FILE"] || "test.sh"
-DEPLOY_SCRIPT_DIR = 'scripts'
-DEPLOY_SCRIPT_PATH = File.expand_path("../#{DEPLOY_SCRIPT_DIR}/#{DEPLOY_SCRIPT_FILE}", __FILE__)
+SCRIPT_FILE = ENV["SCRIPT_FILE"] || "test.sh"
+SCRIPT_DIR = 'scripts'
+SCRIPT_PATH = File.expand_path("../#{SCRIPT_DIR}/#{SCRIPT_FILE}", __FILE__)
 
-abort "DEPLOY_SCRIPT_FILE not found" unless File.exist? DEPLOY_SCRIPT_PATH
+abort "SCRIPT_FILE not found" unless File.exist? SCRIPT_PATH
 
 post '/' do
   if request.env["HTTP_X_GITHUB_EVENT"] != "push"
@@ -16,16 +16,27 @@ post '/' do
   puts request.env["HTTP_X_HUB_SIGNATURE"]
 
   request.body.rewind
-  data = JSON.parse request.body.read
+  payload = JSON.parse request.body.read
 
-  if data["ref"] != "refs/heads/master"
+  if payload["ref"] != "refs/heads/master"
     halt 200, "Not master branch"
   end
 
-  result = `#{DEPLOY_SCRIPT_PATH}`
+  if skip_script?(payload)
+    halt 200, "Skipped."
+  end
+
+  result = `#{SCRIPT_PATH}`
   result += "\nexitstatus: #{$?.exitstatus}"
 
   puts result
   body result
 end
 
+def skip_script?(payload)
+  commits = payload["commits"]
+  return false if commits.empty?
+  commits.any? do |commit|
+    commit["message"].include? "[ci skip]"
+  end
+end
