@@ -16,7 +16,7 @@ LOG_PATH = ENV["LOG_PATH"]
 
 post '/' do
   if request.env["HTTP_X_GITHUB_EVENT"] != "push"
-    halt 304, "Event is not push"
+    halt 200, "Event is not push"
   end
 
   # TODO: 署名を検証
@@ -26,11 +26,11 @@ post '/' do
   payload = JSON.parse request.body.read
 
   if payload["ref"] != "refs/heads/master"
-    halt 304, "Not master branch"
+    halt 200, "Not master branch"
   end
 
   if skip_script?(payload)
-    halt 304, "Skipped."
+    halt 200, "Skipped."
   end
 
   spawn "#{SCRIPT_PATH}"
@@ -48,8 +48,8 @@ get '/log' do
   end
 
   # tail したいので手抜き
-  lines = `tail -n 100 #{LOG_PATH}`
-  body lines
+  lines = `tail -n 100 #{LOG_PATH} | tac`.split("\n")
+  body ["<ul>", *lines, "</ul>"].map { |line| "<li>#{line}</li>" }.join
 end
 
 
@@ -59,4 +59,19 @@ def skip_script?(payload)
   commits.any? do |commit|
     commit["message"].include? "[ci skip]"
   end
+end
+
+def html(body)
+  """
+  <!DOCTYPE html>
+  <html lang=\"en\">
+  <head>
+    <meta charset=\"UTF-8\">
+    <title></title>
+  </head>
+  <body>
+    #{body}
+  </body>
+  </html>
+  """
 end
