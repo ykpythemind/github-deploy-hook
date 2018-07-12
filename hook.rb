@@ -33,6 +33,10 @@ post '/' do
   body result
 end
 
+get '/' do
+  body "alive"
+end
+
 def skip_script?(payload)
   commits = payload["commits"]
   return false if commits.empty?
