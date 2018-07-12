@@ -4,7 +4,7 @@ require "sinatra"
 SCRIPT_FILE = (ENV["SCRIPT_FILE"] || "test.sh").freeze
 SCRIPT_DIR = 'scripts'.freeze
 
-if ENV["SCRIPT_PATH"]
+unless ENV["SCRIPT_PATH"].empty?
   SCRIPT_PATH = ENV["SCRIPT_PATH"]
 else
   SCRIPT_PATH = File.expand_path("../#{SCRIPT_DIR}/#{SCRIPT_FILE}", __FILE__)
