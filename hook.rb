@@ -1,8 +1,8 @@
 
 require "sinatra"
 
-SCRIPT_FILE = ENV["SCRIPT_FILE"] || "test.sh"
-SCRIPT_DIR = 'scripts'
+SCRIPT_FILE = (ENV["SCRIPT_FILE"] || "test.sh").freeze
+SCRIPT_DIR = 'scripts'.freeze
 SCRIPT_PATH = File.expand_path("../#{SCRIPT_DIR}/#{SCRIPT_FILE}", __FILE__)
 
 abort "SCRIPT_FILE not found" unless File.exist? SCRIPT_PATH
