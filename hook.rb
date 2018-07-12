@@ -48,8 +48,9 @@ get '/log' do
   end
 
   # tail したいので手抜き
-  lines = `tail -n 100 #{LOG_PATH} | tac`.split("\n")
-  body ["<ul>", *lines, "</ul>"].map { |line| "<li>#{line}</li>" }.join
+  lines = `tail -n 100 #{LOG_PATH}`.split("\n")
+  body ["<h1>tailing log</h1><ul>", *lines, "</ul>"]
+    .map { |line| "<li>#{line}</li>" }.join
 end
 
 
