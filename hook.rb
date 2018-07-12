@@ -26,11 +26,9 @@ post '/' do
     halt 200, "Skipped."
   end
 
-  result = `#{SCRIPT_PATH}`
-  result += "\nexitstatus: #{$?.exitstatus}"
+  spawn "#{SCRIPT_PATH}"
 
-  puts result
-  body result
+  body "script executed"
 end
 
 get '/' do
