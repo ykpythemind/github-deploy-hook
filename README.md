@@ -1,6 +1,6 @@
 # github-deploy-hook
 
-## install
+## development
 
 ```
 bundle install --path vendor/bundle
