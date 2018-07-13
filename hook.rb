@@ -13,23 +13,24 @@ end
 abort "SCRIPT_FILE not found" unless File.exist? SCRIPT_PATH
 
 LOG_PATH = ENV["LOG_PATH"]
+SECRET = ENV["SECRET"]
 
 post '/' do
   if request.env["HTTP_X_GITHUB_EVENT"] != "push"
     halt 200, "Event is not push"
   end
 
-  # TODO: 署名を検証
-  puts request.env["HTTP_X_HUB_SIGNATURE"]
-
   request.body.rewind
-  payload = JSON.parse request.body.read
+  payload = request.body.read
+  verify_signature payload
 
-  if payload["ref"] != "refs/heads/master"
+  hash = JSON.parse payload
+
+  if hash["ref"] != "refs/heads/master"
     halt 200, "Not master branch"
   end
 
-  if skip_script?(payload)
+  if skip_script?(hash)
     halt 200, "Skipped."
   end
 
@@ -78,3 +79,12 @@ def html(body)
   </html>
   """
 end
+
+def verify_signature(payload_body)
+  # https://developer.github.com/webhooks/securing/#validating-payloads-from-github
+  return unless SECRET
+  signature = 'sha1=' + OpenSSL::HMAC.hexdigest(OpenSSL::Digest.new('sha1'), SECRET, payload_body)
+  return halt 500, "Signatures didn't match!" unless Rack::Utils.secure_compare(signature, request.env['HTTP_X_HUB_SIGNATURE'])
+end
+
+
