@@ -43,7 +43,7 @@ get '/' do
 end
 
 get '/log' do
-  unless File.exist? LOG_PATH
+  if !LOG_PATH || !File.exist?(LOG_PATH)
     halt 404, "Not found log file"
   end
 
