@@ -49,9 +49,10 @@ get '/log' do
 
   # tail したいので手抜き
   lines = `tail -n 100 #{LOG_PATH}`.chomp.split("\n")
-  body ["<h1>tailing log</h1><ul>",
-        *lines.map { |line| "<li>#{line}</li>" },
-        "</ul>"].join
+  body html(
+    ["<h1>tailing log</h1><ul>",
+      *lines.map { |line| "<li>#{line}</li>" },
+      "</ul>"].join)
 end
 
 
